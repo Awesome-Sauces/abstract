@@ -1,8 +1,11 @@
 package state
 
 import (
+	"log"
+
 	"github.com/Awesome-Sauces/abstract/abstract/blockchain"
 	"github.com/Awesome-Sauces/abstract/crypto"
+	"github.com/Awesome-Sauces/abstract/ozone"
 )
 
 /*
@@ -162,4 +165,18 @@ func (st *StateRuntime) settleTransaction(administrator string, tx blockchain.Tr
 	}
 
 	return false, "<TRANSACTION-FAILURE><INSUFFICIENT-BALANCE>"
+}
+
+func (st *StateRuntime) ValidateChain(chain string) bool {
+	side_chain := ozone.New(1000)
+
+	err := side_chain.LoadString(chain)
+
+	if err != nil {
+		log.Print(err)
+
+		return false
+	}
+
+	return true
 }

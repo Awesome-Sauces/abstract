@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestDatabaseOperations(t *testing.T) {
+func TestLedgerOperation(t *testing.T) {
 	t.Run("PaymentTest", func(t *testing.T) {
 		// Create a Ledger to store value
 		ledger := NewLedger()

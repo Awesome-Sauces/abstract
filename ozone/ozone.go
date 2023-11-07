@@ -1,6 +1,7 @@
 package ozone
 
 import (
+	"bytes"
 	"container/list"
 	"encoding/gob"
 	"errors"
@@ -277,6 +278,49 @@ func (db *Database) Load(filename string) error {
 
 	decoder := gob.NewDecoder(file)
 	err = decoder.Decode(&db.db)
+	if err != nil {
+		return err
+	}
+
+	// You might want to also update the cache based on the newly loaded data.
+	// Clearing the cache as an example.
+	db.cache = make(map[string]*list.Element)
+	db.lru = list.New()
+
+	return nil
+}
+
+// SaveToString encodes the database to a string and returns it
+func (db *Database) SaveString() (string, error) {
+	db.mutex.RLock()
+	defer db.mutex.RUnlock()
+
+	if db.closed {
+		return "", ErrOzoneClosed
+	}
+
+	var buf bytes.Buffer
+	encoder := gob.NewEncoder(&buf)
+	err := encoder.Encode(db.db)
+	if err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
+}
+
+// LoadFromString decodes the database from a string
+func (db *Database) LoadString(data string) error {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+
+	if db.closed {
+		return ErrOzoneClosed
+	}
+
+	buf := bytes.NewBufferString(data)
+	decoder := gob.NewDecoder(buf)
+	err := decoder.Decode(&db.db)
 	if err != nil {
 		return err
 	}
