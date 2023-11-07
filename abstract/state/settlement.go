@@ -2,6 +2,7 @@ package state
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/Awesome-Sauces/abstract/abstract/blockchain"
 	"github.com/Awesome-Sauces/abstract/crypto"
@@ -178,5 +179,63 @@ func (st *StateRuntime) ValidateChain(chain string) bool {
 		return false
 	}
 
-	return true
+	temp_state := Start("nan")
+
+	err = temp_state.Genesis()
+
+	if err != nil {
+		log.Print(err)
+		return false
+	}
+
+	container := make(map[string]blockchain.Block)
+
+	err = side_chain.Iterate(func(key string, value ozone.DataItem) error {
+		block := value.Value.(*blockchain.Block)
+
+		container[key] = *block
+
+		return nil
+	})
+
+	if err != nil {
+		log.Print(err)
+		return false
+	}
+
+	for i := 0; i < len(container); i++ {
+		if validation := temp_state.validateBlock(container[strconv.Itoa(i)]); validation {
+			temp_state.settleBlock(container[strconv.Itoa(i)])
+		} else {
+			return false
+		}
+	}
+
+	cut := true
+
+	err = temp_state.ledgers.Iterate(func(key string, value ozone.DataItem) error {
+
+		if !cut {
+			return nil
+		}
+
+		ledger := value.Value.(blockchain.Ledger)
+
+		accounts := ledger.FetchBalances()
+
+		for address, account := range accounts {
+			if account.Balance != st.Balance(key, address) {
+				cut = false
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		log.Print(err)
+		return false
+	}
+
+	return cut
 }
