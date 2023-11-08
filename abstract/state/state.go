@@ -14,19 +14,17 @@ import (
 type StateRuntime struct {
 	currentBlock *blockchain.Block
 
-	ledgers       *ozone.Database
-	pendingBlocks *ozone.Database
-	blockchain    *ozone.Database
-	index         *big.Int
+	ledgers    *ozone.Database
+	blockchain *ozone.Database
+	index      *big.Int
 }
 
 // Start creates a new instance of StateRuntime and initializes the required databases.
 func Start(filename string) *StateRuntime {
 	return &StateRuntime{
-		ledgers:       ozone.New(1000),
-		pendingBlocks: ozone.New(10),
-		blockchain:    ozone.New(1000),
-		index:         big.NewInt(0),
+		ledgers:    ozone.New(1000),
+		blockchain: ozone.New(1000),
+		index:      big.NewInt(0),
 	}
 }
 
