@@ -24,8 +24,14 @@ func (st *StateRuntime) Balance(domain string, address string) *big.Float {
 	return big.NewFloat(ledger.GetBalance(address))
 }
 
-func (st *StateRuntime) AddTransaction(tx *blockchain.Transaction) {
+func (st *StateRuntime) AddTransaction(tx *blockchain.Transaction) bool {
+	if !st.validateTransaction(*tx) {
+		return false
+	}
+
 	st.currentBlock.AddTransaction(tx)
+
+	return true
 }
 
 func (st *StateRuntime) CommitBlock(block *blockchain.Block) {
